@@ -14,7 +14,11 @@ class SocketServer extends Socket {
 	private function initialize() {
 		$this->socket = socket_create(AF_UNIX, SOCK_STREAM, 0);
 
-		//TODO check address is in use or not
+		// check address is in use or not
+		if(file_exists($this->address)) {
+			unlink($this->address);
+		}
+
 		$ret = socket_bind($this->socket, $this->address);
 
 		if($ret === false) {
@@ -44,14 +48,13 @@ class SocketServer extends Socket {
 	}
 
 	public function accept_connection() {
-		$this->connection = socket_accept($this->socket);
+		$this->connection = @socket_accept($this->socket);
 
 		if($this->connection === false) {
 			echo __FUNCTION__.":accept connection error. ".
 				socket_strerror(socket_last_error()).PHP_EOL;
 			return false;
 		}
-		echo "new connection!".PHP_EOL;
 
 		return $this->connection;
 	}

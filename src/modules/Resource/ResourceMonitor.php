@@ -10,6 +10,37 @@ class ResourceMonitor {
 		$this->keyBoxMonitor = new SocketServer(Socket::UNIX, "/tmp/keybox.sock");
 	}
 
+	private function connectionRoutine($socket, $connection) {
+
+		$readfds[0] = $socket;
+		$readfds[1] = $connection;
+		$writefds = null;
+		$e = null;
+
+		$result = socket_select($readfds, $writefds, $e, NULL);
+		if($result === false) {
+			echo __FUNCTION__.":socket select error. ".
+				socket_strerror(socket_last_error()).PHP_EOL;
+		}
+		if(!in_array($connection, $readfds))
+			return;
+
+		if($result == 0)
+			echo "no available resource to read". PHP_EOL;
+
+		for(;;) {
+			$res = socket_read($connection, 2048);
+			if($res === false) {
+				echo __FUNCTION__.":socket read error. ".
+					socket_strerror(socket_last_error()).PHP_EOL;
+				break;
+			}
+			if(empty($res))
+				break;
+			echo "socket msg:".$res.PHP_EOL;
+		}
+	}
+
 	private function __startMonitor($socketServer) {
 
 		if(!$socketServer->listen()) {
@@ -32,24 +63,14 @@ class ResourceMonitor {
 			$connection = $socketServer->accept_connection();
 
 			if($connection === false) {
-				// TODO 
+				// TODO  error handling
+				echo "socket may has been closeed.".PHP_EOL;
 				break;
 			}
-			//TODO select
-			
-			$e = null;
 
-			if(socket_select($r, $w, $e, NULL) === false) {
-				echo __FUNCTION__.":socket select error. ".
-					socket_strerror(socket_last_error()).PHP_EOL;
-			}
-
-			$res = socket_read($connection, 2048);
-			if($res === false) {
-				socket_close($connection);
-				break;
-			}
-			echo "socket msg:".$res.PHP_EOL;
+			/* read the resource information */
+			$this->connectionRoutine($socketServer->getSocket(), $connection);
+			socket_close($connection);
 		}
 		exit();
 	}

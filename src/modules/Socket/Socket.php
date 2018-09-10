@@ -32,6 +32,10 @@ class Socket {
 		return $this->socket;
 	}
 
+	public function getAddress() {
+		return $this->address;
+	}
+
 	public function getWritableStream() {
 	}
 

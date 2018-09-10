@@ -1,4 +1,5 @@
 <?php
+
 require_once("./modules/Event/EventLoop.php");
 require_once("./modules/Event/ServerEvent/ServerRequestEvent.php");
 
@@ -9,10 +10,15 @@ require_once("./Context.php");
 require_once("./modules/Status/CarStatus.php");
 require_once("./modules/Resource/ResourceMonitor.php");
 
+require_once("./utils/Thread.php");
+
 $serverEvent = new ServerRequestEvent();
 
 $serverEvent->setState(1);
-echo $serverEvent->getState();
+echo $serverEvent->getState().PHP_EOL;
+
+$serverEvent->fetchEvent();
+
 $loop = new EventLoop();
 $loop->addEventSource($serverEvent);
 echo $serverEvent->getState() . PHP_EOL;
@@ -28,14 +34,32 @@ $monitor->startMonitor();
 sleep(1);
 
 $cli = new SocketClient(Socket::UNIX, "/tmp/keybox.sock");
-if($cli->connect()) {
-	$res = $cli->getSocket();
-	socket_write($res, "Test");
+
+for($i = 0; $i < 5; $i++) {
+	if($cli->connect()) {
+		$res = $cli->getSocket();
+
+		$readfds = null;
+		$writefds = array($res);
+		$e = null;
+
+		if(socket_select($readfds, $writefds, $e, NULL) === false) {
+			echo __FUNCTION__.":socket select error. ".
+			socket_strerror(socket_last_error()).PHP_EOL;
+		}
+		socket_write($res, "Test");
+	}
+	$cli->close();
 }
 
 $context = Context::getInstance();
 echo $context->getStatus(CarStatus::class).PHP_EOL;
 
-sleep(30);
+$echoTest = function() {
+	for($i = 0; $i < 10; $i++)
+		echo "test".PHP_EOL;
+};
+Thread::run($echoTest);
 $monitor->stopMonitor();
+
 ?>

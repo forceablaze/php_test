@@ -29,6 +29,7 @@ class SocketClient extends Socket {
 			$this->close();
 			return false;
 		}
+		return $ret;
 	}
 
 	private function connectUNIX() {
@@ -65,6 +66,7 @@ class SocketClient extends Socket {
 		}
 
 		$this->isConnected = $ret;
+		return $ret;
 	}
 
 	public function close() {

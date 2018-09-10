@@ -8,6 +8,10 @@ class Context {
 
 	private $statusMap;
 
+	private $resourceMon;
+
+	private $eventLoop;
+
 	public function __construct() {
 		$this->statusMap = array();
 
