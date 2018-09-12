@@ -6,12 +6,12 @@ require_once("./modules/Event/EventObserverInterface.php");
 require_once("./modules/Socket/Socket.php");
 require_once("./modules/Socket/SocketClient.php");
 
+require_once("./utils/Thread.php");
+
 define("UPR_SERVER_SITE", "1.2.3.4");
 define("ECHO_SERVER_SITE", "localhost");
 
 class ServerRequestEvent extends EventSource implements EventObserverInterface {
-
-	private $eventQueue;
 
 	private $state;
 
@@ -35,48 +35,49 @@ class ServerRequestEvent extends EventSource implements EventObserverInterface {
 
 			if(empty($res))
 				break;
+
 			echo __FUNCTION__.":".$res.PHP_EOL;
+			//$pipe = $this->getWritablePipe();
+			//socket_write($pipe, $i);
 		}
 	}
 
 	public function fetchEvent() {
+
 		if(empty($this->socketClient))
 			return false;
 
 		$connectRoutine = function() {
-			if(!$this->socketClient->connect()) {
-				echo "connect to:".$this->socketClient->getAddress().
-					" failed.".PHP_EOL;
-				return;
-			}
-
-			$connection = $this->socketClient->getSocket();
-
-			$readfds[0] = $connection;
-			$writefds = null;
-			$e = null;
-
-			$numbers = socket_select($readfds, $writefds, $e, NULL);
-			if($numbers === false) {
-				echo __FUNCTION__.":socket select error. ".
-				socket_strerror(socket_last_error()).PHP_EOL;
-			}
-
-			if(!in_array($connection, $readfds))
-				echo __FUNCTION__."No available data".PHP_EOL;
-
-			$this->readAndParseEvent($connection);
-			$this->socketClient->close();
-		};
-
-		$retryLoop = function() {
 			for(;;) {
 				echo "trying connect to server....".PHP_EOL;
-				$connectRoutine();
+
+				if(!$this->socketClient->connect()) {
+					echo "connect to:".$this->socketClient->getAddress().
+						" failed.".PHP_EOL;
+					continue;
+				}
+
+				$connection = $this->socketClient->getSocket();
+
+				$readfds[0] = $connection;
+				$writefds = null;
+				$e = null;
+
+				$numbers = socket_select($readfds, $writefds, $e, NULL);
+				if($numbers === false) {
+					echo __FUNCTION__.":socket select error. ".
+					socket_strerror(socket_last_error()).PHP_EOL;
+				}
+
+				if(!in_array($connection, $readfds))
+					echo __FUNCTION__."No available data".PHP_EOL;
+
+				$this->readAndParseEvent($connection);
+				$this->socketClient->close();
 			}
 		};
 
-		$connectRoutine();
+		Thread::run($connectRoutine);
 	}
 
 	public function getState() {
@@ -88,7 +89,7 @@ class ServerRequestEvent extends EventSource implements EventObserverInterface {
 	}
 
 	/* override */
-	public function update() {
+	public function update($context) {
 
 	}
 }

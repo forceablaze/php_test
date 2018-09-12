@@ -2,7 +2,7 @@
 
 class Thread {
 
-	public static function run($callback) {
+	public static function run($callback, $args = null) {
 
         $pid = pcntl_fork();
         if($pid == -1) {
@@ -16,7 +16,7 @@ class Thread {
             return;
 
 		if(!empty($callback))
-			$callback();
+			$callback($args);
 		exit();
 	}
 }

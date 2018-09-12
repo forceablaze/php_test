@@ -12,11 +12,17 @@ require_once("./modules/Resource/ResourceMonitor.php");
 
 require_once("./utils/Thread.php");
 
-$serverEvent = new ServerRequestEvent();
+$echoTest = function() {
+	for(;;) {
+		echo "test".PHP_EOL;
+		sleep(1);
+	}
+};
+//Thread::run($echoTest);
 
+$serverEvent = new ServerRequestEvent();
 $serverEvent->setState(1);
 echo $serverEvent->getState().PHP_EOL;
-
 $serverEvent->fetchEvent();
 
 $loop = new EventLoop();
@@ -32,9 +38,9 @@ $monitor = new ResourceMonitor();
 $monitor->startMonitor();
 
 sleep(1);
+$monitor->stopMonitor();
 
 $cli = new SocketClient(Socket::UNIX, "/tmp/keybox.sock");
-
 for($i = 0; $i < 5; $i++) {
 	if($cli->connect()) {
 		$res = $cli->getSocket();
@@ -54,12 +60,4 @@ for($i = 0; $i < 5; $i++) {
 
 $context = Context::getInstance();
 echo $context->getStatus(CarStatus::class).PHP_EOL;
-
-$echoTest = function() {
-	for($i = 0; $i < 10; $i++)
-		echo "test".PHP_EOL;
-};
-Thread::run($echoTest);
-$monitor->stopMonitor();
-
 ?>

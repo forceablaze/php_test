@@ -13,6 +13,7 @@ class SocketServer extends Socket {
 
 	private function initialize() {
 		$this->socket = socket_create(AF_UNIX, SOCK_STREAM, 0);
+		socket_set_option($this->socket, SOL_SOCKET, SO_REUSEADDR, 1);
 
 		// check address is in use or not
 		if(file_exists($this->address)) {

@@ -1,6 +1,9 @@
 <?php
 
 require_once("./modules/Status/CarStatus.php");
+require_once("./modules/Event/ServerEvent/ServerRequestEvent.php");
+
+require_once("./modules/Event/EventLoop.php");
 
 class Context {
 
@@ -20,16 +23,26 @@ class Context {
 	}
 
 	/* initialize each status */
-	public function initializeStatus() {
+	private function initializeStatus() {
 		$this->statusMap[CarStatus::class] = CarStatus::STATUS_EMPTY;
 	}
 
 	/* initialize resource */
-	public function initializeResource() {
+	private function initializeResource() {
 		// KeyBox
 		// GPS
 		// CardReader
 	}
+
+	/*
+	private function initializeEventSource() {
+		$this->eventLoop = new EventLoop();
+
+		$serverRequestEvent = new ServerRequestEvent();
+
+		$this->eventLoop->addEventSource($serverRequestEvent);
+	}
+	*/
 
 	public function getStatus($type) {
 		return $this->statusMap[$type];

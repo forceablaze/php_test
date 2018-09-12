@@ -23,8 +23,9 @@ class Socket {
 
 	public function close() {
 		if($this->socket) {
-			socket_shutdown($this->socket);
-			socket_close($this->socket);
+			@socket_shutdown($this->socket);
+			if(is_resource($this->socket))
+				socket_close($this->socket);
 		}
 	}
 

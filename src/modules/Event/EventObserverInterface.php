@@ -1,7 +1,7 @@
 <?php
 
 interface EventObserverInterface {
-	public function update();
+	public function update($context);
 }
 
 ?>

@@ -21,7 +21,7 @@ class SocketClient extends Socket {
 			return false;
 		}
 
-		$ret = socket_connect($this->socket, $this->address, $this->port);
+		$ret = @socket_connect($this->socket, $this->address, $this->port);
 
 		if($ret === false) {
 			echo __FUNCTION__.":socket connect failed. ".
@@ -41,7 +41,7 @@ class SocketClient extends Socket {
 			return false;
 		}
 
-		$ret = socket_connect($this->socket, $this->address);
+		$ret = @socket_connect($this->socket, $this->address);
 
 		if($ret === false) {
 			echo __FUNCTION__.":socket connect failed. ".
