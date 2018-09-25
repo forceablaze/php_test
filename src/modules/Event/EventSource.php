@@ -40,7 +40,8 @@ class EventSource {
 			for(;;) {
 				$r = array($this->pipes[1]);
 				$w = null;
-				if(socket_select($r, $w, $e = null, NULL) === false) {
+				$e = null;
+				if(socket_select($r, $w, $e, NULL) === false) {
 					echo __FUNCTION__.":".getmypid().":socket read select error. ".
 						socket_strerror(socket_last_error()).PHP_EOL;
 					break;
