@@ -56,12 +56,10 @@ $main->addEventSource($dummyEvent);
 $dummyEvent->fetchEvent();
 $dummyEvent2->fetchEvent();
 
-sleep(5);
+#sleep(5);
 $dummyEvent->stopFetch();
-sleep(1);
 $dummyEvent->fetchEvent();
 $dummyEvent2->stopFetch();
-sleep(10);
 $dummyEvent2->fetchEvent();
 
 //$dummyEvent->stopFetch();
