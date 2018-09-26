@@ -13,7 +13,7 @@ function combineReducers($reducers) {
 
 	foreach($reducerKeys as $key) {
 		if($reducers[$key] instanceof Reducer) {
-			$finalReducers[] = $reducers[$key];
+			$finalReducers[$key] = $reducers[$key];
 		}
 	}
 

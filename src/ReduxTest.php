@@ -21,11 +21,13 @@ function listener() {
 $unsubscribe = $store->subscribe('listener');
 
 $store->dispatch(CarStateActions::dummyAction());
+print_r($store->getState());
 $store->dispatch(CarStateActions::initAction());
+print_r($store->getState());
 $store->dispatch(CarStateActions::dummyAction());
+print_r($store->getState());
 $unsubscribe();
 
-print_r($store->getState());
 
 //echo CarStateActions::dummyAction()->toString();
 
