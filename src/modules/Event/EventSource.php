@@ -96,8 +96,8 @@ class EventSource {
 		$this->socketClient->close();
 	}
 
-	public function getEventSource() {
-
+	public function getEvent(&$event) {
+		$event = null;
 	}
 
 	public function notify() {
