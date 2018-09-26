@@ -9,10 +9,15 @@ require_once("./utils/SubProcess.php");
 
 $context = new Context();
 $main = new EventLoop($context);
+$dummyEvents = array();
 
 function stopMainLoop() {
-	echo __FUNCTION__.PHP_EOL;
 	global $main;
+	global $dummyEvents;
+
+	foreach($dummyEvents as $ev) {
+		$ev->stopFetch();
+	}
 	$main->stop();
 }
 
@@ -46,23 +51,14 @@ pcntl_signal(SIGTERM, "sig_handler");
 pcntl_signal(SIGINT, "sig_handler");
 
 
-$dummyEvent = new DummyEvent();
-$dummyEvent->setEventId(1);
-$dummyEvent2 = new DummyEvent();
-$dummyEvent2->setEventId(2);
+for($i = 0; $i < 500; $i++) {
+	$dummyEvents[$i] = new DummyEvent();
+	$dummyEvents[$i]->setEventId($i);
+	$dummyEvents[$i]->fetchEvent();
+}
 
-$main->addEventSource($dummyEvent);
+//$main->addEventSource($dummyEvent);
 //$main->addEventSource($dummyEvent2);
-$dummyEvent->fetchEvent();
-$dummyEvent2->fetchEvent();
-
-#sleep(5);
-$dummyEvent->stopFetch();
-$dummyEvent->fetchEvent();
-$dummyEvent2->stopFetch();
-$dummyEvent2->fetchEvent();
-
-//$dummyEvent->stopFetch();
 
 SubProcess::waitAllSubProcess();
 ?>
