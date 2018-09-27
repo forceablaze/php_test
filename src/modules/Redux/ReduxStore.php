@@ -42,10 +42,11 @@ class ReduxStore implements Store {
 			return null;
 		}
 
+		$reducer = $this->currentReducer;
 		try {
 			$this->isDispatching = true;
 			$this->currentState =
-				($this->currentReducer)($this->currentState, $action);
+				$reducer($this->currentState, $action);
 		} finally {
 			$this->isDispatching = false;
 		}
