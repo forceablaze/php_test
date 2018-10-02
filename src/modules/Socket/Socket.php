@@ -37,6 +37,26 @@ class Socket {
 		return $this->address;
 	}
 
+	public function write($buf) {
+
+		$retry = 3;
+
+		while($retry) {
+			$nums = socket_write($this->socket, $buf, strlen($buf));
+			if($nums === false) {
+				echo static::class.":".__FUNCTION__.":".__FILE__.":".__LINE__."socket write error.".
+					socket_strerror(socket_last_error()).PHP_EOL;
+				$retry--;
+				continue;
+			}
+			break;
+		}
+
+		if($retry == 0)
+			return false;
+		return $nums;
+	}
+
 	public function getWritableStream() {
 	}
 
