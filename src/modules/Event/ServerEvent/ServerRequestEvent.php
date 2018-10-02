@@ -1,29 +1,30 @@
 <?php
 
-require_once("./modules/Event/EventSource.php");
-require_once("./modules/Event/EventObserverInterface.php");
+require_once("./modules/Event/BaseEvent/BaseEvent.php");
 
 require_once("./modules/Socket/Socket.php");
 require_once("./modules/Socket/SocketClient.php");
 
 require_once("./utils/Thread.php");
 
-define("UPR_SERVER_SITE", "1.2.3.4");
-define("ECHO_SERVER_SITE", "localhost");
+class ServerRequestEvent extends BaseEvent {
 
-class ServerRequestEvent extends EventSource implements EventObserverInterface {
+	private $client = null;
 
-	private $state;
+	private $eventId;
 
-	private $socketClient = null;
+	public function __construct($socket) {
+		if(!$socket instanceof Socket) {
+			throw new Exception("Argument must be a Socket.");
+		}
 
-	public function __construct() {
-		$this->socketClient =
-			new SocketClient(Socket::TCP, ECHO_SERVER_SITE, 4242);
+		parent::__construct();
+		$this->client = $socket;
 	}
 
 	private function readAndParseEvent($connection) {
-		echo __FUNCTION__.PHP_EOL;
+
+		$this->client->write("AHAHAHA");
 
 		for(;;) {
 			$res = socket_read($connection, 2048);
@@ -36,28 +37,29 @@ class ServerRequestEvent extends EventSource implements EventObserverInterface {
 			if(empty($res))
 				break;
 
+			$this->eventId = $res;
 			echo __FUNCTION__.":".$res.PHP_EOL;
-			//$pipe = $this->getWritablePipe();
-			//socket_write($pipe, $i);
 		}
+		echo __FUNCTION__."end".PHP_EOL;
 	}
 
 	public function fetchEvent() {
 
-		if(empty($this->socketClient))
+		if(empty($this->client))
 			return false;
 
 		$connectRoutine = function() {
 			for(;;) {
-				echo "trying connect to server....".PHP_EOL;
+				//echo "trying connect to server....".PHP_EOL;
 
-				if(!$this->socketClient->connect()) {
-					echo "connect to:".$this->socketClient->getAddress().
+				if(!$this->client->connect()) {
+					echo "connect to:".$this->client->getAddress().
 						" failed.".PHP_EOL;
+					usleep(30000);
 					continue;
 				}
 
-				$connection = $this->socketClient->getSocket();
+				$connection = $this->client->getSocket();
 
 				$readfds[0] = $connection;
 				$writefds = null;
@@ -73,24 +75,19 @@ class ServerRequestEvent extends EventSource implements EventObserverInterface {
 					echo __FUNCTION__."No available data".PHP_EOL;
 
 				$this->readAndParseEvent($connection);
-				$this->socketClient->close();
+				$this->client->close();
 			}
 		};
 
-		Thread::run($connectRoutine);
-	}
-
-	public function getState() {
-		return $this->state;
-	}
-
-	public function setState($state) {
-		$this->state = $state;
+		//Thread::run($connectRoutine);
+		parent::fetchEvent();
 	}
 
 	/* override */
-	public function update($context) {
-
+	public function getEvent(&$event) {
+		echo $this->eventId.PHP_EOL;
+		sleep(1);
+		$event = $this->eventId;
 	}
 }
 
